@@ -1,7 +1,7 @@
 // Vita3K iOS — library, settings and launch coordination.
 import SwiftUI
-import UniformTypeIdentifiers\nimport UIKit
-
+import UniformTypeIdentifiers
+import UIKit
 struct ContentView: View {
     @EnvironmentObject var controller: CoreController
     @Environment(\.scenePhase) private var scenePhase
