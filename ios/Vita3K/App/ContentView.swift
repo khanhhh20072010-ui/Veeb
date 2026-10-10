@@ -1,6 +1,6 @@
 // Vita3K iOS — library, settings and launch coordination.
 import SwiftUI
-import UniformTypeIdentifiers
+import UniformTypeIdentifiers\nimport UIKit
 
 struct ContentView: View {
     @EnvironmentObject var controller: CoreController
@@ -63,11 +63,14 @@ struct ContentView: View {
                 bootWhenReady(next)
             }
         }
-        .alert("Abra pelo StikDebug", isPresented: $controller.showJITAlert) {
+        .alert("JIT não está disponível", isPresented: $controller.showJITAlert) {
+            Button("Ativar pelo StikDebug") {
+                requestJITFromStikDebug()
+            }
             Button("Verificar novamente") { Task { _ = await controller.checkJIT() } }
             Button("Continuar na biblioteca", role: .cancel) {}
         } message: {
-            Text("O JIT não está disponível nesta sessão. Abra o StikDebug, selecione o script Universal e inicie o Veeb por ele. Você pode organizar sua biblioteca sem JIT, mas precisa ativá-lo para jogar.")
+            Text("O Veeb vai solicitar ao StikDebug que ative o JIT para este processo. Ao voltar para o Veeb, o estado será verificado novamente. Você pode organizar sua biblioteca sem JIT, mas precisa dele para jogar.")
         }
         .alert("Não foi possível abrir o jogo", isPresented: Binding(
             get: { launchError != nil }, set: { if !$0 { launchError = nil } }
@@ -126,6 +129,18 @@ struct ContentView: View {
         }
         .tint(EmulatorTheme.accent)
         .preferredColorScheme(lightMode ? .light : .dark)
+    }
+
+    private func requestJITFromStikDebug() {
+        guard let url = Vita3KCore.stikDebugJITURL() else {
+            launchError = "Não foi possível criar o pedido de JIT para o StikDebug."
+            return
+        }
+        UIApplication.shared.open(url, options: [:]) { opened in
+            if !opened {
+                launchError = "O iOS não conseguiu abrir o pedido do StikDebug. Verifique se o StikDebug está instalado e atualizado."
+            }
+        }
     }
 
     private var canPresentImportResult: Bool {

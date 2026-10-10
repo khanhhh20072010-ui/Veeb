@@ -2,11 +2,27 @@
 // Wraps the Vita3KCore C bridge (vita3k/ios) for the SwiftUI UI.
 
 import Foundation
+import Darwin
 import Vita3KCore
 
 /// C-bridge accessors with typed signatures, shared by the SwiftUI UI and
 /// the step 6 emulation surface.
 enum Vita3KCore {
+    /// Build StikDebug's documented deep link for this running app process.
+    /// The URL opening request is not itself proof that JIT was enabled.
+    static func stikDebugJITURL() -> URL? {
+        guard let bundleID = Bundle.main.bundleIdentifier else { return nil }
+        var components = URLComponents()
+        components.scheme = "stikdebug"
+        components.host = "enable-jit"
+        components.queryItems = [
+            URLQueryItem(name: "bundle-id", value: bundleID),
+            URLQueryItem(name: "pid", value: String(getpid())),
+            URLQueryItem(name: "script-name", value: "universal.js")
+        ]
+        return components.url
+    }
+
     enum LoggingMode: String {
         case off, debug, compat, performance, graphics
     }
